@@ -1,0 +1,71 @@
+# INTRO
+1. Checar que las fechas esten en el mismo formato
+Ejemplo: 2016-01-23 16:15:50
+2. Checar que la hora corresponda al lugar (GMT (-7))
+3. Checa las latitudes y las longitudes.
+4. No tener datos de lat long en 0,0
+
+# PAQUETES Y DIRECTORIOS
+Carga tus datos
+```{r}
+#MisTracks<-read_csv...
+```
+
+Checa las columnas
+```{r}
+head(MisTracks)
+colnames(MisTracks)<-c('ID','Latitude','Longitude','date_gmt','time_gmt')
+MisTracks$ID<-as.character(MisTracks$ID)
+MisTracks$date_gmt<-as.character(MisTracks$date_gmt)
+MisTracks$time_gmt<-as.character(MisTracks$time_gmt)
+```
+
+Extrae el punto de la colonia
+```{r}
+MiColony <- MisTracks %>%
+  summarise(
+    Longitude = first(Longitude),
+    Latitude  = first(Latitude)
+    )
+```
+
+Transforma las variables
+```{r}
+MisTracks$lon_colony<-MiColony$Longitude
+MisTracks$lat_colony<-MiColony$Latitude
+MisTracks$DateTime <- paste(MisTracks$date_gmt, MisTracks$time_gmt, sep= " ")
+MisTracks$DateTime <- as.POSIXct(strptime(MisTracks$DateTime, "%d/%m/%Y %H:%M:%S "), "GMT")
+MisTracks$TrackTime <- as.double(MisTracks$DateTime)
+```
+
+Renombra los elementos
+```{r}
+MiDataGroup<-MisTracks[,c("ID","date_gmt","time_gmt","Longitude","Latitude","lon_colony","lat_colony","DateTime")]
+```
+
+Carga paqueteria
+```{r}
+library(track2KBA)
+```
+
+Corre el paquete
+```{r}
+MiTripSplit<-tripSplit(
+  dataGroup  = MiDataGroup,
+  colony     = MiColony,
+  innerBuff  = 1,      # kilometers
+  returnBuff = 2,
+  duration   = 0.5,      # hours
+  rmNonTrip  = TRUE
+)
+```
+
+Estos son tus resultados
+```{r}
+MiTripSplitY<- subset(MiTripSplit, MiTripSplit$Returns == "Yes" )
+MiTripSummary <- tripSummary(trips = MiTripSplitY, colony = MiColony)
+MiTripSummary
+```
+
+Vignette: https://rdrr.io/github/BirdLifeInternational/track2kba/
+Citar: Beal et al. 2020. 
