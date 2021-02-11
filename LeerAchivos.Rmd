@@ -1,0 +1,29 @@
+---
+title: "LeerUnirArchivos"
+author: "MiriamL"
+date: "11/2/2021"
+output: html_document
+---
+
+# Unir documentos
+
+1. Guarda este script en la carpeta donde tienes los archivos o en tu proyecto.
+1a. Si vas a hacer una submuestra, crea una carpeta con los archivos que te interesan.
+2. Checa que todos los archivos tengan el mismo numero de columnas y nombres de las columnas.
+3. Corre el codigo, si no estas familiriazada con Rmd picale al triangulito verde, que parece un 'play'
+
+Si necesitas unir excels cambia csv en la linea 19 por xlsx.
+
+```{r}
+MainFolder<-here()
+FilesTracking <- list.files(MainFolder,pattern="*.csv",full.names=TRUE)
+ListTracking <- lapply(FilesTracking,read_excel)
+ListTracking #Te muestra todos los documentos de la carpeta
+AllTracks <- do.call("rbind",ListTracking)
+```
+
+Suerte! :)
+
+Dudas: lerma@ftz-west.uni-kiel.de
+
+**Fin del documento**
